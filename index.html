@@ -1,44 +1,78 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <script src="https://telegram.org"></script>
     <style>
-        body { background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; }
-        #multiplier { font-size: 50px; margin-top: 50px; color: #00ff00; }
-        #penguin { font-size: 80px; position: relative; transition: 0.1s; }
-        button { padding: 20px 40px; font-size: 20px; background: #ffcc00; border: none; border-radius: 10px; }
+        body { background: #121212; color: white; text-align: center; font-family: 'Arial', sans-serif; overflow: hidden; margin: 0; padding: 20px; }
+        #multiplier { font-size: 60px; font-weight: bold; margin: 20px 0; color: #00ff00; text-shadow: 0 0 10px #00ff00; }
+        #penguin { font-size: 100px; position: absolute; bottom: 150px; left: 50%; transform: translateX(-50%); transition: 0.1s; }
+        .btn { padding: 20px 50px; font-size: 24px; border: none; border-radius: 15px; cursor: pointer; font-weight: bold; width: 80%; }
+        #startBtn { background: #00ff00; color: black; }
+        #cashBtn { background: #ffcc00; color: black; display: none; }
     </style>
 </head>
 <body>
     <div id="multiplier">x1.00</div>
     <div id="penguin">🐧</div>
-    <br>
-    <button onclick="cashOut()">ЗАБРАТЬ!</button>
+    
+    <button id="startBtn" class="btn" onclick="startGame()">ВЗЛЁТ!</button>
+    <button id="cashBtn" class="btn" onclick="cashOut()">ЗАБРАТЬ!</button>
 
     <script>
         let tg = window.Telegram.WebApp;
         let mult = 1.0;
-        let crashed = false;
-        let crashPoint = (Math.random() * 5 + 1).toFixed(2); // Пингвин улетит между x1 и x6
+        let isFlying = false;
+        let crashPoint;
+        let interval;
 
-        let interval = setInterval(() => {
-            if (!crashed) {
+        function startGame() {
+            mult = 1.0;
+            isFlying = true;
+            crashPoint = (Math.random() * 4 + 1.1).toFixed(2); // Улетит от 1.1 до 5.1
+            
+            document.getElementById('startBtn').style.display = 'none';
+            document.getElementById('cashBtn').style.display = 'inline-block';
+            document.getElementById('multiplier').style.color = '#00ff00';
+            
+            interval = setInterval(() => {
                 mult += 0.01;
                 document.getElementById('multiplier').innerText = 'x' + mult.toFixed(2);
+                
+                // Анимация: пингвин немного трясется и ползет вверх
+                let penguin = document.getElementById('penguin');
+                penguin.style.bottom = (150 + (mult * 20)) + 'px';
+                
                 if (mult >= crashPoint) {
-                    crashed = true;
-                    document.getElementById('multiplier').innerText = 'УЛЕТЕЛ!';
-                    document.getElementById('multiplier').style.color = 'red';
+                    crash();
                 }
-            }
-        }, 100);
+            }, 80);
+        }
+
+        function crash() {
+            clearInterval(interval);
+            isFlying = false;
+            document.getElementById('multiplier').innerText = 'УЛЕТЕЛ!';
+            document.getElementById('multiplier').style.color = 'red';
+            document.getElementById('cashBtn').style.display = 'none';
+            setTimeout(() => {
+                document.getElementById('startBtn').style.display = 'inline-block';
+                document.getElementById('startBtn').innerText = 'ЕЩЕ РАЗ';
+            }, 1500);
+        }
 
         function cashOut() {
-            if (!crashed) {
+            if (isFlying) {
+                clearInterval(interval);
+                isFlying = false;
                 alert('Вы выиграли! Коэффициент: x' + mult.toFixed(2));
-                tg.close(); // Закрыть игру и вернуться в бота
+                document.getElementById('cashBtn').style.display = 'none';
+                document.getElementById('startBtn').style.display = 'inline-block';
+                // Здесь можно отправить результат в бота через tg.sendData(mult.toFixed(2));
             }
         }
     </script>
 </body>
 </html>
+
