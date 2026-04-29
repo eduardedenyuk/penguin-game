@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="https://telegram.org"></script>
+    <style>
+        body { background: #1a1a1a; color: white; text-align: center; font-family: sans-serif; }
+        #multiplier { font-size: 50px; margin-top: 50px; color: #00ff00; }
+        #penguin { font-size: 80px; position: relative; transition: 0.1s; }
+        button { padding: 20px 40px; font-size: 20px; background: #ffcc00; border: none; border-radius: 10px; }
+    </style>
+</head>
+<body>
+    <div id="multiplier">x1.00</div>
+    <div id="penguin">🐧</div>
+    <br>
+    <button onclick="cashOut()">ЗАБРАТЬ!</button>
+
+    <script>
+        let tg = window.Telegram.WebApp;
+        let mult = 1.0;
+        let crashed = false;
+        let crashPoint = (Math.random() * 5 + 1).toFixed(2); // Пингвин улетит между x1 и x6
+
+        let interval = setInterval(() => {
+            if (!crashed) {
+                mult += 0.01;
+                document.getElementById('multiplier').innerText = 'x' + mult.toFixed(2);
+                if (mult >= crashPoint) {
+                    crashed = true;
+                    document.getElementById('multiplier').innerText = 'УЛЕТЕЛ!';
+                    document.getElementById('multiplier').style.color = 'red';
+                }
+            }
+        }, 100);
+
+        function cashOut() {
+            if (!crashed) {
+                alert('Вы выиграли! Коэффициент: x' + mult.toFixed(2));
+                tg.close(); // Закрыть игру и вернуться в бота
+            }
+        }
+    </script>
+</body>
+</html>
